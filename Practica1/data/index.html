@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control ESP32</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Manejo de señales a traves de ESP32</h1>
+            <p class="subtitle">Monitoreo y control en tiempo "real"</p>
+        </header>
+
+        <!-- Esta parte es para ver la temperatura y humedad del dht11/22
+        ademas tiene un histograma -->
+        <div class="dashboard">
+            <div class="card">
+                <h2 class="card-title">
+                    <i>📊</i> Datos del Sensor de temperatura y humedad
+                </h2>
+                <div class="data-display">
+                    <div class="data-item">
+                        <div class="data-value" id="temperature">--</div>
+                        <div class="data-label">Temperatura °C</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-value" id="humidity">--</div>
+                        <div class="data-label">Humedad %</div>
+                    </div>
+                </div>
+                <!--hay que mejorar esto-->
+                <h3>Historial de Temperatura</h3>
+                <div class="chart-container">
+                    <canvas id="temperature-chart"></canvas>
+                </div>
+            </div>
+            <!--Esta parte esta hecha para el envio de mensajes por MQTT al esp32-->
+            <div class="card">
+                <h2 class="card-title">
+                    <i>⚙️</i> Controles
+                </h2>
+                <p>Gestiona los dispositivos conectados al sistema de domótica</p>
+
+                <!--Esto se podria mejorar con iconos-->
+                <div class="controls">
+                    <!--<button class="btn btn-danger" id="prueba">Prueba apagada</button>-->
+
+                    <button class="btn btn-danger" id="luz1">Luz 1 apagada</button>
+                </div>
+                <h3>Mensajes Recibidos</h3>
+                <div id="message-log"
+                    style="height: 200px; overflow-y: auto; margin-top: 1rem; padding: 10px; background-color: var(--light); border-radius: 8px;">
+                    <p>Esperando mensajes...</p>
+                </div>
+            </div>
+        </div>
+        <footer>
+            <p>Aplicación Web para control de sensores</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
