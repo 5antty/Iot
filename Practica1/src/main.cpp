@@ -1,5 +1,7 @@
 #include <Arduino.h>
-#include <Wifi.h>
+#include <WiFiManager.h>
+#undef HTTP_GET // Evita conflicto con HTTP_GET de ESPAsyncWebServer
+#include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <DHTesp.h>
 #include <LittleFS.h>
@@ -36,11 +38,17 @@ void enviarEstadoACliente(AsyncWebSocketClient *client);
 void setup()
 {
   Serial.begin(115200);
+
+  // ── Configuración de Hardware ─────────────────────────────
+
+  // Inicializo el pin del LED como salida y lo apago
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LOW);
 
   // Inicializo el dht11
-  dht.setup(DHT_PIN, DHTesp::DHT11); // Connect DHT sensor to GPIO 4
+  dht.setup(DHT_PIN, DHTesp::DHT11);
+
+  // ── LittleFS ─────────────────────────────────────────────
 
   // Incializo el filesystem donde se guardarán los archivos HTML, CSS y JS
   if (!LittleFS.begin(true))
@@ -48,28 +56,27 @@ void setup()
     Serial.println("Error al montar LittleFS");
     return;
   }
-  // Establezco conexion WiFi
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  int retries = 0;
-  while (WiFi.status() != WL_CONNECTED && retries < 30)
+
+  // ── WiFiManager ────────────────────────────────────────────
+
+  // Conectamos a WiFi usando WiFiManager (crea un AP de configuración si no se conecta)
+  WiFi.mode(WIFI_STA); // Modo estación (cliente)
+  WiFiManager wifiManager;
+  // Hago esto para que no haya conflicto entre el portal de configuración de WiFiManager y el servidor web que vamos a crear
+  wifiManager.setSaveConfigCallback([]()
+                                    {
+    Serial.println("Nueva red guardada, reiniciando...");
+    delay(1000);
+    ESP.restart(); });
+
+  bool res = wifiManager.autoConnect("ESP32-Config", "admin51423"); // Crea un AP con este nombre y contraseña si no se conecta
+  if (!res)
   {
-    delay(500);
-    Serial.print(".");
-    retries++;
+    Serial.println("Error: No se pudo conectar al WiFi");
+    return;
   }
 
-  if (WiFi.status() == WL_CONNECTED)
-  {
-    Serial.println("\nConectado!");
-    Serial.print("Dirección IP: ");
-    Serial.println(WiFi.localIP());
-  }
-  else
-  {
-    Serial.println("\nError: No se pudo conectar al WiFi");
-  }
-
-  // ── WebSocket ──
+  // ── WebSocket ─────────────────────────────────────────────
   ws.onEvent(onWsEvent);
   server.addHandler(&ws);
 
@@ -124,7 +131,7 @@ void setupRoutes()
  */
 String construirJSON(float temp, float hum, bool led)
 {
-  StaticJsonDocument<128> doc;
+  JsonDocument doc;
   doc["temp"] = isnan(temp) ? -1 : temp; // -1 si el sensor falló
   doc["hum"] = isnan(hum) ? -1 : hum;
   doc["led"] = led;
@@ -174,7 +181,7 @@ void onWsEvent(AsyncWebSocket *server,
 
   case WS_EVT_CONNECT:
     // Un navegador abrió la página
-    Serial.printf("✓ Cliente #%u conectado desde %s\n",
+    Serial.printf("Cliente #%u conectado desde %s\n",
                   client->id(),
                   client->remoteIP().toString().c_str());
     // Le mandamos el estado actual inmediatamente
@@ -182,7 +189,7 @@ void onWsEvent(AsyncWebSocket *server,
     break;
 
   case WS_EVT_DISCONNECT:
-    Serial.printf("✗ Cliente #%u desconectado\n", client->id());
+    Serial.printf("Cliente #%u desconectado\n", client->id());
     break;
 
   case WS_EVT_DATA:
@@ -195,7 +202,7 @@ void onWsEvent(AsyncWebSocket *server,
       Serial.println("← Recibido: " + mensaje);
 
       // ── Parseamos el JSON del cliente ──
-      StaticJsonDocument<64> doc;
+      JsonDocument doc;
       DeserializationError err = deserializeJson(doc, mensaje);
 
       if (!err)
