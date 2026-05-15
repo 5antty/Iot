@@ -2,14 +2,34 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <WiFiManager.h>
+#include <DHTesp.h>
+#include <ArduinoJson.h>
+
+// ─── Pines de Hardware ──────────────────────────────────────
+#define DHT_PIN 17 // GPIO17 → datos del sensor DHT11
+
 // Conexión Broker MQTT
-const char *mqtt_server = "192.168.X.X";
-// Cliente MQTT
-WiFiClient espClient;
+const char *mqtt_server = "192.168.X.X"; // Reemplaza con la IP del server MQTT local
+
+// Objetos globales
+DHTesp dht;
+WiFiClient espClient; // Cliente MQTT
 PubSubClient client(espClient);
+
+// Intervalo de envío de datos del sensor (milisegundos)
+const unsigned long INTERVALO_SENSOR = 2000;
+unsigned long ultimaLectura = 0; // Temporizador
+
+// ─── Prototipos de funciones ───────────────────────────────
+String construirJSON(float temp, float hum);
+void enviarAlServidorMQTT();
+
 void setup()
 {
   Serial.begin(115200);
+
+  // Inicializo el dht11
+  dht.setup(DHT_PIN, DHTesp::DHT11);
 
   // ── WiFiManager ────────────────────────────────────────────
 
@@ -36,9 +56,38 @@ void setup()
 }
 void loop()
 {
-  float temp = 24.5; // Simulación
-  char msg[50];
-  sprintf(msg, "{\"temp\": %.2f}", temp);
-  client.publish("sensor/ambiente", msg);
-  delay(5000);
+  // Envio datos del sensor cada INTERVALO_SENSOR milisegundos
+  unsigned long ahora = millis();
+  if (ahora - ultimaLectura >= INTERVALO_SENSOR)
+  {
+    ultimaLectura = ahora;
+    enviarAlServidorMQTT();
+  }
+}
+
+/**
+ * Construye un JSON con todos los datos del sistema.
+ * Ejemplo: {"temp":24.5,"hum":60.0}
+ */
+String construirJSON(float temp, float hum)
+{
+  JsonDocument doc;
+  doc["temp"] = isnan(temp) ? -1 : temp; // -1 si el sensor falló
+  doc["hum"] = isnan(hum) ? -1 : hum;
+
+  String json;
+  serializeJson(doc, json);
+  return json;
+}
+
+/**
+ * Envía el estado actual (sensor dht11) al servidor MQTT.
+ */
+void enviarAlServidorMQTT()
+{
+  float temp = dht.getTemperature();
+  float hum = dht.getHumidity();
+  String json = construirJSON(temp, hum);
+  client.publish("sensores/dht11", json.c_str());
+  Serial.println("Enviado a MQTT: " + json);
 }
