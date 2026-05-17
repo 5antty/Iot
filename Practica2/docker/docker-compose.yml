@@ -20,7 +20,9 @@ services:
   # Node-RED
   # ──────────────────────────────────────────
   nodered:
-    image: nodered/node-red:latest
+    build:
+      context: ./nodered
+      dockerfile: Dockerfile
     container_name: nodered
     restart: unless-stopped
     ports:

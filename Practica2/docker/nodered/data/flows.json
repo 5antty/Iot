@@ -8,6 +8,63 @@
         "env": []
     },
     {
+        "id": "aa02bca76e425e2f",
+        "type": "mqtt in",
+        "z": "12e532b125237eb5",
+        "name": "recepcion mqtt",
+        "topic": "sensores/dht11",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "aaadf36d4618a10a",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 300,
+        "y": 180,
+        "wires": [
+            [
+                "b1eedda7e8f70df6",
+                "144ea760056c884d"
+            ]
+        ]
+    },
+    {
+        "id": "144ea760056c884d",
+        "type": "influxdb out",
+        "z": "12e532b125237eb5",
+        "influxdb": "b8d94657bc74487c",
+        "name": "Guardar datos en BD de Influx",
+        "measurement": "dht11",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 730,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "b1eedda7e8f70df6",
+        "type": "debug",
+        "z": "12e532b125237eb5",
+        "name": "debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 650,
+        "y": 140,
+        "wires": []
+    },
+    {
         "id": "aaadf36d4618a10a",
         "type": "mqtt-broker",
         "name": "server local mqtt",
@@ -54,41 +111,11 @@
         "rejectUnauthorized": true
     },
     {
-        "id": "aa02bca76e425e2f",
-        "type": "mqtt in",
-        "z": "12e532b125237eb5",
-        "name": "recepcion mqtt",
-        "topic": "sensores/dht11",
-        "qos": "0",
-        "datatype": "auto-detect",
-        "broker": "aaadf36d4618a10a",
-        "nl": false,
-        "rap": true,
-        "rh": 0,
-        "inputs": 0,
-        "x": 300,
-        "y": 180,
-        "wires": [
-            [
-                "b1eedda7e8f70df6"
-            ]
-        ]
-    },
-    {
-        "id": "b1eedda7e8f70df6",
-        "type": "debug",
-        "z": "12e532b125237eb5",
-        "name": "debug",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 650,
-        "y": 140,
-        "wires": []
+        "id": "087e51f23a373618",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-influxdb": "0.7.0"
+        }
     }
 ]
