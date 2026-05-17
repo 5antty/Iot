@@ -9,7 +9,7 @@
 #define DHT_PIN 17 // GPIO17 → datos del sensor DHT11
 
 // Conexión Broker MQTT
-const char *mqtt_server = "192.168.X.X"; // Reemplaza con la IP del server MQTT local
+const char *mqtt_server = "192.168.0.10"; // Reemplaza con la IP del server MQTT local
 
 // Objetos globales
 DHTesp dht;
