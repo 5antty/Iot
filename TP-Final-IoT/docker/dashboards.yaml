@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: "Dashboards IoT-Practica2"
+    orgId: 1
+    folder: ""
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /mis-dashboards # El contenedor va a buscar los JSONs acá adentro

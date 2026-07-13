@@ -1,0 +1,236 @@
+[
+    {
+        "id": "12e532b125237eb5",
+        "type": "tab",
+        "label": "Flujo IoT-Practica2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "aaadf36d4618a10a",
+        "type": "mqtt-broker",
+        "name": "server local mqtt",
+        "broker": "mosquitto",
+        "port": 1883,
+        "clientid": "nodered",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "5",
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "b8d94657bc74487c",
+        "type": "influxdb",
+        "hostname": "influxdb",
+        "port": 8086,
+        "protocol": "http",
+        "database": "sensores",
+        "name": "influxdb-docker",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "1.x",
+        "url": "http://localhost:8086",
+        "timeout": 10,
+        "rejectUnauthorized": true
+    },
+    {
+        "id": "087e51f23a373618",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-influxdb": "0.7.0"
+        }
+    },
+    {
+        "id": "7a5bd77664e270e5",
+        "type": "websocket-listener",
+        "path": "/ws/datos",
+        "wholemsg": "false"
+    },
+    {
+        "id": "f122233fb61e7a29",
+        "type": "websocket-listener",
+        "path": "/ws/control",
+        "wholemsg": "false"
+    },
+    {
+        "id": "aa02bca76e425e2f",
+        "type": "mqtt in",
+        "z": "12e532b125237eb5",
+        "name": "recepcion mqtt",
+        "topic": "nodo0/datos",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "aaadf36d4618a10a",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 230,
+        "y": 240,
+        "wires": [
+            [
+                "5a9b8ecf69609557",
+                "12d0c10388b8219a"
+            ]
+        ]
+    },
+    {
+        "id": "144ea760056c884d",
+        "type": "influxdb out",
+        "z": "12e532b125237eb5",
+        "influxdb": "b8d94657bc74487c",
+        "name": "Guardar datos en BD de Influx",
+        "measurement": "dht11",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 780,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "b1eedda7e8f70df6",
+        "type": "debug",
+        "z": "12e532b125237eb5",
+        "name": "debug",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 490,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "5a9b8ecf69609557",
+        "type": "function",
+        "z": "12e532b125237eb5",
+        "name": "filtro dato hum",
+        "func": "msg.payload = msg.payload.hum; // Reemplazas el payload con el valor que quieres\nmsg.topic = \"hum\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 240,
+        "wires": [
+            [
+                "b1eedda7e8f70df6",
+                "144ea760056c884d"
+            ]
+        ]
+    },
+    {
+        "id": "9bd2badacdc1fa09",
+        "type": "websocket in",
+        "z": "12e532b125237eb5",
+        "name": "websocket desde web",
+        "server": "7a5bd77664e270e5",
+        "client": "",
+        "x": 260,
+        "y": 480,
+        "wires": [
+            [
+                "ee22b75d8956fd16"
+            ]
+        ]
+    },
+    {
+        "id": "12d0c10388b8219a",
+        "type": "websocket out",
+        "z": "12e532b125237eb5",
+        "name": "websocket hacia web",
+        "server": "7a5bd77664e270e5",
+        "client": "",
+        "x": 520,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "201a4304f20c37be",
+        "type": "mqtt out",
+        "z": "12e532b125237eb5",
+        "name": "envio cmd valvula a ESP32",
+        "topic": "nodo0/valvula",
+        "qos": "0",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "aaadf36d4618a10a",
+        "x": 740,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "2b4161de235c4f82",
+        "type": "debug",
+        "z": "12e532b125237eb5",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 500,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "ee22b75d8956fd16",
+        "type": "function",
+        "z": "12e532b125237eb5",
+        "name": "function 1",
+        "func": "// 1. Convertimos el texto JSON que viene de la web a un objeto de JavaScript\ntry {\n    let datos = JSON.parse(msg.payload);\n    \n    // 2. Evaluamos el estado de la propiedad 'bomba'\n    if (datos.bomba === true) {\n        msg.payload = \"ON\";\n    } else if (datos.bomba === false) {\n        msg.payload = \"OFF\";\n    } else {\n        return null; // Si no trae la propiedad 'bomba', descartamos el mensaje\n    }\n    \n    // 3. Le definimos el topic de MQTT directamente aquí (opcional pero recomendado)\n    msg.topic = \"nodo0/valvula\";\n    \n    return msg;\n    \n} catch(e) {\n    // Por si acaso llega un texto que no sea JSON válido\n    node.error(\"Error al procesar el JSON de la web: \" + e.message);\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 480,
+        "wires": [
+            [
+                "2b4161de235c4f82",
+                "201a4304f20c37be"
+            ]
+        ]
+    }
+]
