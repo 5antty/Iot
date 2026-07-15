@@ -78,7 +78,7 @@
         "type": "mqtt in",
         "z": "12e532b125237eb5",
         "name": "recepcion mqtt",
-        "topic": "nodo0/datos",
+        "topic": "redsensores",
         "qos": "0",
         "datatype": "auto-detect",
         "broker": "aaadf36d4618a10a",
@@ -91,7 +91,7 @@
         "wires": [
             [
                 "5a9b8ecf69609557",
-                "12d0c10388b8219a"
+                "32cb744ee1d46b2c"
             ]
         ]
     },
@@ -101,7 +101,7 @@
         "z": "12e532b125237eb5",
         "influxdb": "b8d94657bc74487c",
         "name": "Guardar datos en BD de Influx",
-        "measurement": "dht11",
+        "measurement": "medidas",
         "precision": "",
         "retentionPolicy": "",
         "database": "database",
@@ -118,7 +118,7 @@
         "type": "debug",
         "z": "12e532b125237eb5",
         "name": "debug",
-        "active": false,
+        "active": true,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -126,8 +126,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 490,
-        "y": 320,
+        "x": 530,
+        "y": 300,
         "wires": []
     },
     {
@@ -142,13 +142,10 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 500,
-        "y": 240,
+        "x": 440,
+        "y": 40,
         "wires": [
-            [
-                "b1eedda7e8f70df6",
-                "144ea760056c884d"
-            ]
+            []
         ]
     },
     {
@@ -182,7 +179,7 @@
         "type": "mqtt out",
         "z": "12e532b125237eb5",
         "name": "envio cmd valvula a ESP32",
-        "topic": "nodo0/valvula",
+        "topic": "",
         "qos": "0",
         "retain": "",
         "respTopic": "",
@@ -217,7 +214,7 @@
         "type": "function",
         "z": "12e532b125237eb5",
         "name": "function 1",
-        "func": "// 1. Convertimos el texto JSON que viene de la web a un objeto de JavaScript\ntry {\n    let datos = JSON.parse(msg.payload);\n    \n    // 2. Evaluamos el estado de la propiedad 'bomba'\n    if (datos.bomba === true) {\n        msg.payload = \"ON\";\n    } else if (datos.bomba === false) {\n        msg.payload = \"OFF\";\n    } else {\n        return null; // Si no trae la propiedad 'bomba', descartamos el mensaje\n    }\n    \n    // 3. Le definimos el topic de MQTT directamente aquí (opcional pero recomendado)\n    msg.topic = \"nodo0/valvula\";\n    \n    return msg;\n    \n} catch(e) {\n    // Por si acaso llega un texto que no sea JSON válido\n    node.error(\"Error al procesar el JSON de la web: \" + e.message);\n    return null;\n}",
+        "func": "// 1. Convertimos el texto JSON que viene de la web a un objeto de JavaScript\ntry {\n    let datos = JSON.parse(msg.payload);\n    \n    // 2. Evaluamos el estado de la propiedad 'bomba'\n    if (datos.bomba === true) {\n        msg.payload = \"ON\";\n    } else if (datos.bomba === false) {\n        msg.payload = \"OFF\";\n    } else {\n        return null; // Si no trae la propiedad 'bomba', descartamos el mensaje\n    }\n    \n    // 3. Le definimos el topic de MQTT directamente aquí (opcional pero recomendado)\n    msg.topic = \"actuadores/nodo0\";\n    \n    return msg;\n    \n} catch(e) {\n    // Por si acaso llega un texto que no sea JSON válido\n    node.error(\"Error al procesar el JSON de la web: \" + e.message);\n    return null;\n}",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -230,6 +227,28 @@
             [
                 "2b4161de235c4f82",
                 "201a4304f20c37be"
+            ]
+        ]
+    },
+    {
+        "id": "32cb744ee1d46b2c",
+        "type": "function",
+        "z": "12e532b125237eb5",
+        "name": "function 2",
+        "func": "let datos = msg.payload;\n\nmsg.payload = [\n    {\n        sensor: datos.tipo,\n        valor:  datos.value,\n        actuador: datos.dispositivo\n    },\n    {\n        id: String(datos.id)\n    }\n];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 240,
+        "wires": [
+            [
+                "b1eedda7e8f70df6",
+                "12d0c10388b8219a",
+                "144ea760056c884d"
             ]
         ]
     }
